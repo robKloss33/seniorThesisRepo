@@ -21,7 +21,7 @@
 ## Week 2 Summary (MM/DD/YYYY)
 ### This week I worked on:
 
-[Your answer here]
+Deciding on what 
 
 ### This week I learned:
 
@@ -37,22 +37,22 @@
 
 ---
 
-## Week 3 Summary (MM/DD/YYYY)
+## Week 3 Summary (09/22/2024)
 ### This week I worked on:
 
-[Your answer here]
+Set up an AWS account and started some of the basic onboarding.
 
 ### This week I learned:
 
-[Your answer here]
+I learned about web services and budget management.
 
 ### My successes this week were:
 
-[Your answer here]
+Creation of a budget and basic hosting knowledge.
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Some confusion on networking and some of the AWS lingo.
 
 ---
 

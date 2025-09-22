@@ -1,180 +1,108 @@
-# Senior Thesis Repo: [PLACE YOUR PROJECT NAME HERE]
-This repository is provided to help you build your senior thesis project. You will edit it to store your specification documents, code, and weekly checkins.
+# Senior Thesis Repo: Document Parse and Search Web Application
 
-First, fork this repo (this makes a copy of it associated with your account) and then clone it to your machine (this makes a copy of your fork on your personal machine). You can then use an editor and a GitHub client to manage the repository.
-
-### Markdown
-This file is called README.md. It is a [Markdown file](https://en.wikipedia.org/wiki/Markdown). Markdown is a simple way to format documents. When a Markdown-ready viewer displays the contents of a file, it formats it to look like HTML. However, Markdown is significantly easier to write than HTML. VSCode supports displaying Markdown in a preview window. GitHub uses Markdown extensively including in every repo's description file, ```README.md```.
-
-All Markdown files end with the extension ```.md```. There is a Markdown tutorial [here](https://www.markdowntutorial.com/) and a Markdown cheatsheet [here](https://www.markdownguide.org/cheat-sheet/).
-
-#### Images
-If you would like to add images to a Markdown file, place them in the ```docs/images/``` directory in this repo and reference them using markdown like this:
-
-```
-![alt text](relative/path/to/image)
-```
-
-Here is how to add the Carthage logo to a Markdown file (you can see the image in the repo right now):
-
-```
-![Carthage Firebird Logo](docs/images/firebirdLogo.jpg)
-```
-![Carthage Firebird Logo](docs/images/firebirdLogo.jpg)
-
-This ensures that images are correctly linked and displayed when viewing the documentation on GitHub or any Markdown-supported platform.
-
-## Code
-The ```code``` directory is used to store your code. You can put it all in one directory or you can create subdirectories.
-
-I have added a ```main.cpp``` file to get you started. Feel free to remove it.
-
-If you have any questions feel free to ask me! I'll answer professor questions, customer questions, and give advice if asked.
-
-# Sample Spec
-
-Below is an example of a project specification.  
-
-## Software Requirements Specification for the Mahoney University Registration System
+## Software Requirements Specification for a Document Parse and Search Web Application
 
 ## Introduction
 
 ### Purpose
-The purpose of this document is to outline the functional and non-functional requirements of Mahoney University’s new online registration system. The system is designed to streamline the registration process for students and faculty, replacing the outdated manual system. This specification serves as a contract between the system stakeholders and the developers to ensure that the system meets the needs of its users while adhering to university policies and technical constraints.
+The purpose of this document is to outline the functional and non-functional requirements of a web application that can handle document parsing. This project specification will explain the basic features and goals of the app.
 
 The key goals of the new system are:
-- To improve the efficiency of the course registration process for students.
-- To provide staff in the Registrar’s Office with tools to manage course offerings, schedules, and student records.
-- To enhance the accuracy and accessibility of student academic information, such as grades and enrollment history.
-- To support the university’s transition to digital infrastructure while maintaining compatibility with legacy systems during a transitional period.
+- Allow users to quickly and easily upload and parse documents
+- Create a simple data for easy retrieval from other devices
+- Provide a simple and easy solution for creating static webpages
 
 ### Scope
-This system is intended to support the registration process for all students at Mahoney University, including undergraduates, graduate students, and non-degree-seeking students. The system will handle:
-- Student authentication and secure access to personal records.
-- Course search and registration.
-- Enrollment validation, including prerequisite checks and course availability.
-- Management of student schedules, including the ability to add, drop, or modify course enrollments.
-- Grade viewing and transcript requests.
-
-The scope of the system also includes administrative tools for the Registrar’s Office to:
-- Create and modify course offerings for each academic term.
-- Manage enrollment caps, waitlists, and course prerequisites.
-- Track student progress and generate reports for academic performance.
+This system is intended to support anyone who would like to upload documents to create a static webpage. The system will handle:
+- User registration and login
+- Document upload and parsing
+- Easy access to previously handled data 
+- Search and export parcels of data
 
 ### Definitions, Acronyms, and Abbreviations
-- **Registrar**: The official responsible for maintaining student records, managing course schedules, and overseeing the registration process.
-- **Student Information System (SIS)**: A university-wide database that stores student records, course information, and academic data.
-- **GPA**: Grade Point Average, a numerical representation of a student's academic performance.
-- **Semester**: A division of the academic year, typically consisting of a Fall and Spring term, in which courses are offered and completed.
-- **Waitlist**: A system that allows students to reserve a spot in a full course, subject to availability if another student drops the course.
-- **Prerequisite**: A course or requirement that must be completed before a student can enroll in a more advanced course.
-- **User Role**: A designation for system access levels, such as student, registrar, or faculty member, each with different permissions within the system.
-- **Concurrent Enrollment**: The ability for students to be enrolled in multiple courses during the same academic term.
+- **Document**: File containing text, likely pdf, doc, or txt.
+- **Key term**: Any word or phrase entered for search by the user. This is what the user is trying to find in the documents.
 
 ## Overview
-The Mahoney University Registration System is a web-based platform designed to automate the course registration process for students and faculty. It serves as the primary interface for students to manage their academic schedules and for university staff to oversee the course offerings and registration workflows.
+The Document Parsing Web Application is a web-based platform designed to simplify document parsing and data storage. It allows users to build a collection of parsed data for easy export.
 
 ### System Features:
-1. **Secure Login**: Ensures that only authorized users (students, faculty, and staff) have access to the system, with user authentication based on university credentials.
-2. **Course Search**: Allows students to browse available courses by department, term, and subject, with filtering options based on course availability, schedule, and prerequisites.
-3. **Course Registration**: Students can add or drop courses, view class schedules, and receive notifications of any conflicts or unmet prerequisites.
-4. **Grades and Transcripts**: Provides students with access to their grades from current and past semesters, as well as the ability to request official transcripts.
-5. **Registrar Management Tools**: The Registrar’s Office can create, modify, and delete course sections, set enrollment limits, and manage waitlists.
+1. **User Login and Registration**: Ensures users have access to only their data. Anyone who is not a user may register an account with the system.
+2. **Data Upload**: Users can upload a variety of files that will be broken down for and stored.
+3. **Data Storage and Access**: Data from documents is stored and only accessible by the orginal user.
+4. **Data Search**: Users can search their uploaded data by key terms. A count of all matches will be shown. The data will be displayed by orginal document title with the search word/phrase bolded in the context of a sentence/phrase. If there is no sentence/phrase, the search term will be displayed with a page number. 
+5. **Data Download**: Parcels can be downloaded by search term in a text file.
 
-The system is designed with scalability in mind, allowing it to handle thousands of students registering simultaneously during peak periods. It will integrate with the university’s existing Student Information System (SIS) and is built using modern web technologies to ensure ease of use, reliability, and performance.
+The system is designed with to allow users to access from a variety fo devices for easy search and retrieval. 
 
-The following sections detail the specific use cases that the system will support, describing how students and staff will interact with the system during typical operations.
+The following sections detail the specific use cases that the system will support, describing how users will interact with the system. 
 
 ## Use Cases
 
-### Use Case 1.1: Secure Login
-- **Actors**: Student or registrar
-- **Overview**: Actor uses password to verify their identity.
+### Use Case 1.1: Account Registration
+- **Actors**: User
+- **Overview**: Actor creates an account with user name and password.
 
 **Typical Course of Events**:
-1. Page prompts for username and password.
-2. User enters their username and password and hits enter/login.
-3. System verifies that the username and password are correct.
+1. Page prompts to sign in or register.
+2. User selects register.
+3. Page prompts for username and password.
+4. User enters their username and password and hits enter/register.
+5. System verifies that the username is available and password is valid.
 
 **Alternative Courses**:
-- **Step 3**: User and/or password are not correct.
+- **Step 5**: Username is not available and/or password is not valid.
   1. Displays error.
   2. Go back to step 1.
 
-### Use Case 1.2: Find a Course
-- **Actors**: Student
-- **Overview**: Student finds a desired class.
+### Use Case 1.2: Secure Login
+- **Actors**: User
+- **Overview**: Actor uses username and password to verify identity.
 
 **Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Displays list of current and upcoming semesters.
-3. Student selects a semester.
-4. Displays departments actively offering courses in that semester.
-5. Student selects a department.
-6. Displays courses of that department from that semester that are currently offered.
-7. Student selects a course.
-8. Displays course details.
+1. Page prompts to sign in or register.
+2. User selects sign in.
+3. Page prompts for username and password.
+4. User enters their username and password and hits enter/register.
+5. System verifies that the username and password are valid.
 
 **Alternative Courses**:
-- Any step: Student can start a new search at any time
-  1. Student clicks "start new search."
+- **Step 5**: Username and/or password are not valid.
+  1. Displays error.
+  2. Go back to step 1.
+
+### Use Case 1.3: Search by key term
+- **Actors**: User
+- **Overview**: User searches their data by a key term.
+
+**Typical Course of Events**:
+1. Run Use Case 1.2, *Secure Login*.
+2. Displays list of previously uploaded documents.
+3. User selects one more documents.
+4. User types in a key term.
+5. Data is diplayed for the key term by document.
+6. Data is available for download
+
+**Alternative Courses**:
+- Any step: User can start a new search at any time
+  1. User clicks "start new search."
   2. Go back to step 2.
+- Step 5: No matches found
+  1. An error is displayed.
+  2. Return to step 4. 
 
-### Use Case 1.3: Register for a Course
-- **Actors**: Student
-- **Overview**: Student registers for a course.
+### Use Case 1.4: Upload a Document
+- **Actors**: User
+- **Overview**: User uploads a document.
 
 **Typical Course of Events**:
-1. Run Use Case 1.2, *Find a Course*.
-2. Student clicks on "register for course" button.
-3. Verify that student can take the course.
-4. Display "You have successfully registered for 'insert course name here'."
+1. Run Use Case 1.2, *Secure Login*.
+2. User selects button to upload a new document.
+3. User is prompted to drag/select document.
+4. Display document successfully uploaded
 
 **Alternative Courses**:
-- **Step 4**: Student can't take course
-  1. Displays "You cannot take this course, please contact the registrar for further information."
+- **Step 4**: Document fails to upload
+  1. Displays an error message.
+  2. Return to step 2.
 
-### Use Case 1.4: Check Grades
-- **Actors**: Student
-- **Overview**: Student checks grades.
-
-**Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Display previous semesters in which the student took course(s).
-3. Student selects semester.
-4. Displays courses and grades.
-
-### Use Case 1.5: Registrar Creates Sections
-- **Actors**: Registrar
-- **Overview**: Registrar creates section.
-
-**Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Registrar selects "Create Section."
-3. Display "Create Section" form.
-4. Registrar submits form.
-5. System verifies valid entry (no overlapping schedules/times).
-6. Displays section details and successfully added.
-
-**Alternative Courses**:
-- **Step 6**: Entry invalid
-  1. Display error.
-  2. Go back to step 3.
-
-### Use Case 1.6: Registrar Modifies Section
-- **Actors**: Registrar
-- **Overview**: Registrar modifies existing sections.
-
-**Typical Course of Events**:
-1. Run Use Case 1.1, *Secure Login*.
-2. Registrar selects "Modify section."
-3. Displays all sections (with order options).
-4. Choose section.
-5. Display "Edit Form" with filled-in data.
-6. Submit/verify data.
-7. Display "Section successfully edited."
-
-**Alternative Courses**:
-- **Step 7**: Invalid Data
-  1. Display Error.
-  2. Go back to step 5.
