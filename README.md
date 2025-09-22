@@ -106,3 +106,17 @@ The following sections detail the specific use cases that the system will suppor
   1. Displays an error message.
   2. Return to step 2.
 
+### Use Case 1.5: Download a Document
+- **Actors**: User
+- **Overview**: User wants to download after a search.
+
+**Typical Course of Events**:
+1. Run Use Case 1.3, *Search by Key Term*.
+2. User selects button to download data.
+3. Data is written to a document.
+4. Display document available for download.
+
+**Alternative Courses**:
+- **Step 4**: Download failed
+  1. Displays an error message.
+  2. Return to step 2.
