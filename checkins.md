@@ -56,22 +56,22 @@ Some confusion on networking and some of the AWS lingo.
 
 ---
 
-## Week 4 Summary (MM/DD/YYYY)
+## Week 4 Summary (09/28/2025)
 ### This week I worked on:
 
-[Your answer here]
+Routing to upload and download from AWS-managed buckets, exclusively worked on the backend
 
 ### This week I learned:
 
-[Your answer here]
+Bucket security, env variables, AWS-sdk for node.js
 
 ### My successes this week were:
 
-[Your answer here]
+Upload and download work for txt files, parse also works
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+I need to look more into parsing/uploading/downloading pdfs, docs, etc. Also need to ensure users can only access thier own documents. Likely wi8ll handle this wehn i start to manage the front end.
 
 ---
 
