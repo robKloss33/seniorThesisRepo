@@ -1,6 +1,3 @@
-
-require('dotenv').config();
-
 const express = require('express'); 
 const morgan = require('morgan'); 
 const path = require('path');
@@ -11,6 +8,7 @@ const DBAbstraction = require('./DBAbstraction');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const readline = require('readline');
+require('dotenv').config();
 //look into pdf-parse
 //mammoth for docs
 const {pipeline} = require("stream");
@@ -31,6 +29,7 @@ const s3 = new S3Client({
 
 const db = new DBAbstraction;
 db.init();
+
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -77,25 +76,19 @@ async function downloadFromS3(bucketName, keyName) {
 
 function findPeriodAndSplice(line, phrase)
 {
-    // let phraseIndex = line.search(phrase);
-    // const redot = /[.!?]/;
-    // let index = -1;
-
-    // while(line.search(redot)!= -1)
-    // {
-        
-    //     console.log(index);
-    //     index = line.search(redot);
-    //     if(index < phraseIndex)
-    //     {
-
-    //     }
-    //     line = line.slice(index+1);
-    // }
-    // if(index != -1)
-    // {
-    //     line = line.substring(0,index+1);
-    // }
+    let phraseIndex;
+    const redot = /[.!?]/;
+    let index;
+    while(line.search(redot)!= -1 )
+    {
+        phraseIndex = line.search(phrase);
+        index = line.search(redot);
+        if(phraseIndex < index)
+        {
+            return line.substring(0, index+1);
+        }
+        line = line.substring(index+1);
+    }
     return line;
 }
 
@@ -118,33 +111,88 @@ async function parse(keyName, phrase)
 
         let arrayMatches = new Array();
         let lineNum = 0; 
-        let prevLine = "";
+        let prevLine;
+        let nextLine;
+        let curLine;
 
         for await(const line of rl){
-            lineNum++;
-            if(line.search(phrase)!= -1)
+
+            if(lineNum==0)
             {
-                if(line.search(redot)!= -1)
+                if(line.search(phrase)!=-1)
                 {
-                    let retLine = findPeriodAndSplice(line, phrase);
-                    arrayMatches.push([lineNum, retLine]); 
+                    arrayMatches.push([1,line]);
+                }
+                prevLine = line;
+                lineNum++;
+                continue;
+            }
+            else if(lineNum==1)
+            {
+                curLine = line;
+                lineNum++;
+                continue;
+            }
+            else if(lineNum==2)
+            {
+                nextLine = line;
+            }
+            lineNum++;
+
+            if(curLine.search(phrase)!= -1)
+            {
+                let phraseIndex = curLine.search(phrase);
+                if(curLine.search(redot)!= -1)
+                {
+                    let retLine = findPeriodAndSplice(curLine, phrase);
+                    if(retLine.search(redot)==-1)
+                    {
+                        if(nextLine.search(redot)!=-1)
+                        {
+                            let newNext = nextLine.substring(0, nextLine.search(redot)+1);
+                            retLine = retLine + " " + newNext;
+                        }
+                        else{
+                            retLine = retLine +" "+ nextLine;
+                        }
+                    }
+                    
+                    arrayMatches.push([lineNum-2, retLine]); 
                 }
                 else if (prevLine.search(redot)!= -1)
                 {
-                    let retLine = findPeriodAndSplice(prevLine, phrase);
-                    retLine = retLine + " " + line
-                    arrayMatches.push([lineNum, line]);   
+                    let retLine = prevLine;
+                    while(retLine.search(redot)!=-1)
+                    {
+                        retLine = retLine.substring(retLine.search(redot)+1);
+                    }
+                    retLine = retLine + " " + curLine;
+                    arrayMatches.push([lineNum-2, retLine]);   
                 }   
+                else if(nextLine.search(redot)!=-1)
+                {
+                    let newNext = nextLine.substring(0, nextLine.search(redot)+1);
+                    let retLine = curLine + " " + newNext;
+                    arrayMatches.push([lineNum-2, retLine]);   
+                }
                 else
                 {
-                    let retLine = prevLine + " " + line;
-                    arrayMatches.push([lineNum, retLine]);   
+                    console.log(lineNum);
+                    let retLine = prevLine + " " + curLine + " " + nextLine;
+                    arrayMatches.push([lineNum-2, retLine]);   
                 }
             }
-            prevLine = line;
+            prevLine = curLine;
+            curLine = nextLine;
+            nextLine = line;
 
         }
+        if(nextLine.search(phrase)!=-1)
+        {
+            arrayMatches.push([lineNum,line]);
+        }
         console.log(arrayMatches);
+        console.log(arrayMatches.length);
     }
     catch(err){
         console.log(err);
@@ -236,7 +284,26 @@ app.get('/generateReport', async (req, res)=> {
     }
 });
 
-app.listen(53140, () => console.log('The server is up and running...'));
+//**********************************************************//
+//****************** Login-Related Routes ******************//
+//**********************************************************//
+app.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        console.log("try do");
+        await db.insertUser(username, email, hashedPassword);
+        req.session.user = username;
+        res.json({success: true});
+    } catch (err) {
+        res.status(500).send("Username might already exist.");
+    }
+});
+
+
+
+
+app.listen(24086, () => console.log('The server is up and running...'));
 
 
 /*

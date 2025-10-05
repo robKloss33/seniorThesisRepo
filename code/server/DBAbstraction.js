@@ -2,7 +2,9 @@
 // DBAbstraction.js
 const mysql = require('mysql2/promise');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 const { Client } = require('ssh2');
+const net = require('net');  
 require('dotenv').config();
 
 class DBAbstraction{
@@ -15,7 +17,9 @@ constructor(){
 async init(){
     try{
         await this.createSSHTunnel();
+        console.log("1");
         await this.createPool();
+        console.log("2");
         await this.createAllTables();
         console.log("Connected to Amazon RDS");
 
@@ -24,6 +28,7 @@ async init(){
         throw err;
     }
 }
+
 createSSHTunnel() {
     return new Promise((resolve, reject) => {
         this.ssh = new Client();
@@ -103,9 +108,12 @@ async createAllTables(){
 //**********************************************************//
 //********************      Inserts      *******************//
 //**********************************************************//
+
+
 async insertUser(userName, email, password){
     try{
         const params = [userName, email, password];
+        console.log("gonna try");
         const sql = `INSERT INTO Users (Username, Email, Password) VALUES (?,?,?);`;
         await this.query(sql, params);
         console.log("Successfully inserted user");
