@@ -78,19 +78,19 @@ I need to look more into parsing/uploading/downloading pdfs, docs, etc. Also nee
 ## Week 5 Summary (MM/DD/YYYY)
 ### This week I worked on:
 
-[Your answer here]
+Backend and DBAbstraction. I started a few routes and swapped my parse function.
 
 ### This week I learned:
 
-[Your answer here]
+SSH, security groups, and Amazon DBs
 
 ### My successes this week were:
 
-[Your answer here]
+Created a database, used MYSQL to create tables, successful queries
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Tunneling and security to access DB while testing.
 
 ---
 
