@@ -1,4 +1,3 @@
-
 // DBAbstraction.js
 const mysql = require('mysql2/promise');
 const fs = require('fs');
@@ -6,36 +5,40 @@ const bcrypt = require('bcrypt');
 const { Client } = require('ssh2');
 const net = require('net');  
 require('dotenv').config();
+const tunnel = require('tunnel-ssh');
 
 class DBAbstraction{
 
 constructor(){
     this.pool = null;
     this.ssh = null;
+    this.forwardedStream = null;
 }
 
 async init(){
     try{
+        console.log("Pre-Tunnel");
         await this.createSSHTunnel();
-        console.log("1");
+        console.log("SSH Tunnel Created");
         await this.createPool();
-        console.log("2");
+        console.log("Created Pool");
         await this.createAllTables();
         console.log("Connected to Amazon RDS");
-
     }catch(err){
         console.error("Failed to Connect to Amazon RDS: ", err);
         throw err;
     }
 }
 
-createSSHTunnel() {
+async createSSHTunnel() {
     return new Promise((resolve, reject) => {
         this.ssh = new Client();
+        console.log("client");
         this.ssh.on('ready', () => {
+            console.log("in SHH tunnel create");
             this.ssh.forwardOut(
                 '127.0.0.1',
-                21345,
+                12345,
                 process.env.DB_HOST,
                 parseInt(process.env.DB_PORT),
                 (err,stream) => {
@@ -45,15 +48,16 @@ createSSHTunnel() {
                     resolve();
                 }
             );
-
         }).on('error', reject)
             .connect({
                 host: process.env.SSH_HOST,
                 username: process.env.SSH_USERNAME,
+                port: 22,
                 privateKey: fs.readFileSync(process.env.SSH_KEY_PATH)
             });
     });
 }
+
 async createPool(){
     this.pool = mysql.createPool({
         user: process.env.DB_USER,   
@@ -66,8 +70,6 @@ async createPool(){
     });
 }
 
-
-
 async query(sql, params = []){
     try{
         const rows = await this.pool.execute(sql, params);
@@ -78,6 +80,8 @@ async query(sql, params = []){
         throw err;
     }
 }
+
+//alter tables to be unique
 
 async createAllTables(){
     try{
@@ -133,15 +137,17 @@ async insertDoc(key, fileName, user){
         throw err;
     }
 }
+
 //**********************************************************//
 //********************     Retrievals     ******************//
 //**********************************************************//
+
 async fetchUserID(username){
     try{
         const params = [username];
         const sql = `SELECT UserID FROM Users WHERE Username = ?`;
         const rows = await this.query(sql, params);
-        if(rows.length()!=1)
+        if(rows.length!=1)
         {
             throw new Error("No such user exists");
         }
@@ -154,12 +160,55 @@ async fetchUserID(username){
         throw err;
     }
 }
+
 async fetchDocsByUser(username){
     try{
         const userID = await this.fetchUserID(username);
+        const params = [userID];
         const sql = `SELECT * FROM Docs WHERE UserID = ?`;
         const rows = await this.query(sql, params);
         console.log("Successfully fetched ${username}'s Docs");
+        return rows;
+    }catch(err){
+        console.error(err);
+        throw err;
+    }
+}
+async fetchUserByUsername(username){
+    try{
+        const params = [username];
+        const sql = `SELECT * FROM Users WHERE Username = ?`;
+        const rows = await this.query(sql, params);
+        if(rows.length!=2)
+        {
+            throw new Error("No such user exists");
+        }
+        else{
+            console.log("Successfully fetched UserID");
+            return rows[0]; 
+        }
+    }catch(err){
+        console.error(err);
+        throw err;
+    }
+}
+async fetchTitleByKey(keyName){
+    try{
+        const sql = `SELECT FileName FROM Docs WHERE KeyName = ?`;
+        const rows = await this.query(sql, [keyName]);
+        console.log("Successfully fetched Doc Name");
+        return rows;
+    }catch(err){
+        console.error(err);
+        throw err;
+    }
+}
+
+async printAllTables(){
+    try{
+        const sql = `SELECT * FROM Docs JOIN Users ON Docs.UserID = Users.UserID`;
+        const rows = await this.query(sql);
+        console.log("Successfully fetched all");
         return rows;
     }catch(err){
         console.error(err);
@@ -180,7 +229,6 @@ async fetchDocsByUser(username){
 //         throw err;
 //     }
 // }
-
 
 
 }

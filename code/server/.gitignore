@@ -1,3 +1,6 @@
 .env
 testData/
 node_modules/
+ReportAbstraction.js
+S3Abstraction.js
+

@@ -9,12 +9,18 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const readline = require('readline');
 require('dotenv').config();
+
 //look into pdf-parse
 //mammoth for docs
+
 const {pipeline} = require("stream");
 const {promisify} = require("util");
 
-const {S3Client, PutObjectCommand, GetObjectCommand} = require("@aws-sdk/client-s3")
+const { Document, Packer, Paragraph, HeadingLevel } = require("docx"); 
+const { saveAs } =  require("file-saver");
+
+
+const {S3Client, PutObjectCommand, GetObjectCommand} = require("@aws-sdk/client-s3");
 
 const app = express();
 const pipe = promisify(pipeline);
@@ -28,7 +34,12 @@ const s3 = new S3Client({
 });
 
 const db = new DBAbstraction;
-db.init();
+async function main() {
+    await db.init();
+    //await generateReport(["Frankenstein.txt"], ["God", "Good"]);
+    
+}
+main();
 
 
 app.use(morgan('dev'));
@@ -91,6 +102,8 @@ function findPeriodAndSplice(line, phrase)
     }
     return line;
 }
+
+
 
 async function parse(keyName, phrase)
 {
@@ -191,6 +204,7 @@ async function parse(keyName, phrase)
         {
             arrayMatches.push([lineNum,line]);
         }
+        return arrayMatches;
         console.log(arrayMatches);
         console.log(arrayMatches.length);
     }
@@ -199,13 +213,66 @@ async function parse(keyName, phrase)
     }
 }
 console.log("attempt");
-//parse("Frankenstein.txt", "God");
-async function generateReport(keyNames, phrases) {
 
+ 
+async function generateReport(keyNames, phrases) {
+    let doc = new Document({
+        sections: []
+    });
     
+    let paragraphs = [];
+    
+    for(let i = 0; i < keyNames.length; i++)
+    {
+        let key = keyNames[i];
+        let title = await db.fetchTitleByKey(key); 
+        paragraphs.push(new Paragraph({
+            text: title,
+        }));
+        
+        for(let search of phrases)
+        {
+            let results = await parse(key, search); 
+            paragraphs.push(new Paragraph({ text: "" })); 
+            
+            for(let j = 0; j < results.length; j++) 
+            {
+                paragraphs.push(new Paragraph({
+                    text: results[j][0] + ": " + results[j][1]
+                }));
+            }
+        }
+    }
+    doc = new Document({
+        sections: [{
+            properties: {},
+            children: paragraphs
+        }]
+    });
+    //Saves to file system as report for testing
+    // const buffer = await Packer.toBuffer(doc);
+    // const filePath = path.join(__dirname, "report.docx");
+    // fs.writeFileSync(filePath, buffer);
+    // console.log("Report Printed");
+
+    //Usage for website
+    saveDocumentToFile(doc, "newDoc.docx"); 
 }
 
-const filePath = 'testData/Resume-KlossCS.txt';
+async function saveDocumentToFile(doc, fileName) {
+    try {
+        const buffer = await Packer.toBuffer(doc);
+        
+        const filePath = path.join(__dirname, fileName);
+        fs.writeFileSync(filePath, buffer);
+        
+        console.log(`Document saved to ${filePath}`);
+        return filePath;
+    } catch (err) {
+        console.error("Error saving document:", err);
+        throw err;
+    }
+}
 
 function readInFile(path)
 {
@@ -216,8 +283,6 @@ function readInFile(path)
         console.error('Error reading file:', err);
     }
 }
-+
-
 
 function generateKeyName(fileName, userName)
 {
@@ -229,16 +294,13 @@ app.use((req, res, next) => {
     next();
 });
 
-// app.get('/', async (req, res) => { 
-//     res.render('index.html', { user: req.session.user}); 
-// });
 
 app.post('/upload', async (req, res)=>{
     try{
-        // const user = req.session.user;
-        // const {file} = req.body;
-        //keyName = generateKeyName(user, file);
-        let file = readInFile(filePath);
+        const user = db.fetchUserByUsername(req.session.user);
+        const {file} = req.body;
+        keyName = generateKeyName(user, file);
+        //let file = readInFile(filePath);
         let keyName = "test.txt" 
         await uploadToS3(file,process.env.BUCKET_NAME,keyName);
         res.status(200).send("Upload Complete")
@@ -247,6 +309,7 @@ app.post('/upload', async (req, res)=>{
         throw err;
     }
 });
+
 app.get('/download/:keyName', async (req, res)=>{
     try{
         let keyName = req.params.keyName;
@@ -265,33 +328,48 @@ app.get('/download/:keyName', async (req, res)=>{
         throw err;
     }
 });
-app.get('/generateReport', async (req, res)=> {
+app.post('/generateReport', async (req, res)=> {
+    let {keys, searches} = req.body;
     try{
-        // let searches = [];
-        // let keys = [];
-
-        let answers = [];
-        for(let key of keys)
-        {
-            
-        }
-
-
-
+        await generateReport(keys, searches);
+        res.json({success: true});
     }catch(err){
         res.status(500).send("Generate Failed");
         throw err;
     }
 });
 
+app.post('/addDoc', async (req, res) => {
+    const {key, fileName, user} = req.body;
+    try {
+        await db.insertDoc(key, fileName, user);
+        res.json({success: true});
+    } catch (err) {
+        res.status(500).send("Could not add document.");
+    }
+});
+
+app.get('/all', async (req, res) => {
+    try {
+        let rows = await db.printAllTables();
+        res.json({success: true, data: rows});
+    } catch (err) {
+        res.status(500).send("Could not add document.");
+    }
+});
+
 //**********************************************************//
 //****************** Login-Related Routes ******************//
 //**********************************************************//
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.json({ success: true });
+    });
+});
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-        console.log("try do");
         await db.insertUser(username, email, hashedPassword);
         req.session.user = username;
         res.json({success: true});
@@ -299,12 +377,22 @@ app.post('/register', async (req, res) => {
         res.status(500).send("Username might already exist.");
     }
 });
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await db.fetchUserByUsername(username);
+    if (user && await bcrypt.compare(password, user[0].Password)) {
+        req.session.user = username;
+        return res.json({ success: true, user: username });
+    } else {
+        res.status(401).send("Invalid credentials.");
+    }
+});
 
 
-
-
+// app.get('/', async (req, res) => { 
+//     res.render('index.html', { user: req.session.user}); 
+// });
 app.listen(24086, () => console.log('The server is up and running...'));
-
 
 /*
    ,     #_
