@@ -75,7 +75,7 @@ I need to look more into parsing/uploading/downloading pdfs, docs, etc. Also nee
 
 ---
 
-## Week 5 Summary (MM/DD/YYYY)
+## Week 5 Summary (10/05/2025)
 ### This week I worked on:
 
 Backend and DBAbstraction. I started a few routes and swapped my parse function.
@@ -94,22 +94,22 @@ Tunneling and security to access DB while testing.
 
 ---
 
-## Week 6 Summary (MM/DD/YYYY)
+## Week 6 Summary (10/12/2025)
 ### This week I worked on:
 
-[Your answer here]
+Finding a way to handle pdf parsing
 
 ### This week I learned:
 
-[Your answer here]
+How to operate the pdf-parse package
 
 ### My successes this week were:
 
-[Your answer here]
+Finding and selecting a package
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Refactoring parse
 
 ---
 
