@@ -8,10 +8,17 @@ const DBAbstraction = require('./DBAbstraction');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const readline = require('readline');
+const { readFile, writeFile } = require('node:fs/promises');
+const officeParser = require('officeparser');
+
+
+
 require('dotenv').config();
 
+
+const { PDFParse } = require('pdf-parse');
 //look into pdf-parse
-//mammoth for docs
+//mammoth for docs display
 
 const {pipeline} = require("stream");
 const {promisify} = require("util");
@@ -20,7 +27,8 @@ const { Document, Packer, Paragraph, HeadingLevel } = require("docx");
 const { saveAs } =  require("file-saver");
 
 
-const {S3Client, PutObjectCommand, GetObjectCommand} = require("@aws-sdk/client-s3");
+const {S3Client, PutObjectCommand, GetObjectCommand, RestoreRequestFilterSensitiveLog} = require("@aws-sdk/client-s3");
+const e = require('express');
 
 const app = express();
 const pipe = promisify(pipeline);
@@ -36,6 +44,8 @@ const s3 = new S3Client({
 const db = new DBAbstraction;
 async function main() {
     await db.init();
+    //await parse("Frankenstein.txt", "God");
+    await parse("Resume-KlossCS.docx", "AWS");
     //await generateReport(["Frankenstein.txt"], ["God", "Good"]);
     
 }
@@ -103,23 +113,64 @@ function findPeriodAndSplice(line, phrase)
     return line;
 }
 
-
+function keyType(keyName)
+{
+    let type; 
+    if(keyName.endsWith('.pdf'))
+    {
+        type = 'pdf';
+    }
+    else if(keyName.endsWith('.docx') || keyName.endsWith('.xlsx') || keyName.endsWith('.pptx'))
+    {
+        type = 'office'
+    }
+    else if(keyName.endsWith('.txt'))
+    {
+        type ='txt'
+    }
+    return type;
+}
 
 async function parse(keyName, phrase)
 {
     try{
+        let lines;
+        let type = keyType(keyName);
         const data = await downloadFromS3(process.env.BUCKET_NAME, keyName);
 
-        //convert to txt file handle later
-        //data.Body;
-
+        if(type == 'pdf')
+        {
+            const buffer = await data.Body.transformToByteArray();
+            const parser = new PDFParse({ data: buffer });
+            const textResult = await parser.getText();
+            await parser.destroy();
+            lines = textResult.text.split("\n");
+        }
+        else if(type == 'txt')
+        {
+            const rl = readline.createInterface({
+                input: data.body,
+                crlfDelay: Infinity
+            })
+            lines = [];
+            for(const line of rl)
+            {
+                lines.push_back(line);
+            }
+        }
+        else if(type =='office')
+        {
+            let chunks = []
+            for await(const line of data.Body)
+            {
+                chunks.push(line);
+            }
+            const buffer =  Buffer.concat(chunks);
+            const text = await officeParser.parseOfficeAsync(buffer);
+            lines = text.split("\n");
+        }
+        
         console.log("Found file");
-
-        const rl = readline.createInterface({
-            input: data.Body,
-            crlfDelay: Infinity
-        });
-
         const redot = /[.!?]/;
 
         let arrayMatches = new Array();
@@ -128,7 +179,7 @@ async function parse(keyName, phrase)
         let nextLine;
         let curLine;
 
-        for await(const line of rl){
+        for await(const line of lines){
 
             if(lineNum==0)
             {
@@ -190,7 +241,6 @@ async function parse(keyName, phrase)
                 }
                 else
                 {
-                    console.log(lineNum);
                     let retLine = prevLine + " " + curLine + " " + nextLine;
                     arrayMatches.push([lineNum-2, retLine]);   
                 }

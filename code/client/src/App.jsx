@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import './App.css'
 import NavBar from './NavBar'
+import LoginForm from './loginForm';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
       <NavBar></NavBar>
+      <LoginForm></LoginForm>
       <h1> Document Parse and Search</h1>
       
     </>
