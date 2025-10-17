@@ -146,14 +146,15 @@ async fetchUserID(username){
     try{
         const params = [username];
         const sql = `SELECT UserID FROM Users WHERE Username = ?`;
-        const rows = await this.query(sql, params);
-        if(rows.length!=1)
+        let rows = await this.query(sql, params);
+        console.log(rows[0][0]);
+        if(rows.length!=2)
         {
             throw new Error("No such user exists");
         }
         else{
             console.log("Successfully fetched UserID");
-            return rows[0].UserID; 
+            return rows[0][0].UserID; 
         }
     }catch(err){
         console.error(err);

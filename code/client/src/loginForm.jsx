@@ -10,11 +10,12 @@ function LoginForm({ setUser }) {
         const form = event.target;
         const formUsername = form.username.value;
         const password = form.password.value;
+        console.log(formUsername, password);
 
         const route = formType === "login" ? "/login" : "/register";
-
+        console.log(route);
         try {
-            const response = await fetch(`${route}`, {
+            const response = await fetch(`http://localhost:24086${route}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -24,7 +25,7 @@ function LoginForm({ setUser }) {
             });
 
             if (response.ok) {
-                const userRes = await fetch('/userQuery', {
+                const userRes = await fetch('http://localhost:24086/userQuery', {
                     credentials: "include",
                 });
                 const userData = await userRes.json();
@@ -49,7 +50,7 @@ function LoginForm({ setUser }) {
     }
     async function handleLogout() {
         try {
-            const response = await fetch('/logout', {
+            const response = await fetch('http://localhost:24086/logout', {
                 method: "POST",
                 credentials: "include",
             });
@@ -82,6 +83,9 @@ function LoginForm({ setUser }) {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <input type="text" name="username" className="form-control" placeholder="Username" required />
+                    </div>
+                    <div className="form-group">
+                        <input type="email" name="email" className="form-control" placeholder="Email" required />
                     </div>
                     
                     <div className="form-group">

@@ -33,6 +33,7 @@ const e = require('express');
 const app = express();
 const pipe = promisify(pipeline);
 
+
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -42,18 +43,11 @@ const s3 = new S3Client({
 });
 
 const db = new DBAbstraction;
-async function main() {
-    await db.init();
-    //await parse("Frankenstein.txt", "God");
-    await parse("Resume-KlossCS.docx", "AWS");
-    //await generateReport(["Frankenstein.txt"], ["God", "Good"]);
-    
-}
-main();
+db.init();
 
 
 app.use(morgan('dev'));
-app.use(express.static(path.join(__dirname, '../client/dist')));
+
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(bodyParser.json());
 
@@ -62,6 +56,153 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+app.use(cors(
+    {origin: 'http://localhost:5173',
+        credentials: true}
+));
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+
+
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
+
+
+app.post('/upload', async (req, res)=>{
+    try{
+        const user = db.fetchUserByUsername(req.session.user);
+        const {file} = req.body;
+        keyName = generateKeyName(user, file);
+        //let file = readInFile(filePath);
+        let keyName = "test.txt" 
+        await uploadToS3(file,process.env.BUCKET_NAME,keyName);
+        res.status(200).send("Upload Complete")
+    } catch (err){
+        res.status(500).send("Upload Failed");
+        throw err;
+    }
+});
+
+app.get('/download/:keyName', async (req, res)=>{
+    try{
+        let keyName = req.params.keyName;
+        const data = await downloadFromS3(process.env.BUCKET_NAME,keyName);
+
+        console.log();
+
+        res.setHeader("Content-Disposition",'attachment: filename="${keyName}"');
+        res.setHeader("Content-Type", "application/octet-stream");
+
+        await pipe(data.Body, res);
+        res.status(200).send("Download Complete");
+
+    } catch (err){
+        res.status(500).send("Download Failed");
+        throw err;
+    }
+});
+app.post('/generateReport', async (req, res)=> {
+    let {keys, searches} = req.body;
+    try{
+        await generateReport(keys, searches);
+        res.json({success: true});
+    }catch(err){
+        res.status(500).send("Generate Failed");
+        throw err;
+    }
+});
+
+app.post('/addDoc', async (req, res) => {
+    const {key, fileName, user} = req.body;
+    try {
+        await db.insertDoc(key, fileName, user);
+        res.json({success: true});
+    } catch (err) {
+        res.status(500).send("Could not add document.");
+    }
+});
+
+app.get('/all', async (req, res) => {
+    try {
+        let rows = await db.printAllTables();
+        res.json({success: true, data: rows});
+    } catch (err) {
+        res.status(500).send("Could not add document.");
+    }
+});
+
+
+app.get('/userDocsQuery', async (req, res) => {
+    try {
+        // let userQuery = await db.fetchUserByUsername(req.session.user);
+        // let userID = userQuery[0].UserID;
+        // console.log(userID);
+        console.log("^^^^^^^");
+        let docs = await db.fetchDocsByUser(req.session.user);
+        res.json({success: true, data: docs});
+    } catch (err) {
+        res.status(500).send("Could not get documents.");
+    }
+});
+
+//**********************************************************//
+//****************** Login-Related Routes ******************//
+//**********************************************************//
+app.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.json({ success: true });
+    });
+});
+app.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        await db.insertUser(username, email, hashedPassword);
+        req.session.user = username;
+        res.json({success: true});
+    } catch (err) {
+        res.status(500).send("Username might already exist.");
+    }
+});
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await db.fetchUserByUsername(username);
+    console.log(user);
+    if (user && await bcrypt.compare(password, user[0].Password)) {
+        req.session.user = username;
+        console.log(req.session.user);
+        return res.json({ success: true, user: username });
+    } else {
+        res.status(401).send("Invalid credentials.");
+    }
+});
+app.get('/userQuery', (req, res) =>{
+    res.json({ user: req.session.user});
+})
+
+
+// app.get('/', async (req, res) => { 
+//     res.render('index.html', { user: req.session.user}); 
+// });
+app.listen(24086, () => console.log('The server is up and running...'));
+
+/*
+   ,     #_
+   ~\_  ####_  
+  ~~  \_#####\
+  ~~     \###|
+  ~~       \#/ ___   
+   ~~       V~' '->
+    ~~~         /
+      ~~._.   _/
+         _/ _/
+       _/m/'
+
+*/
+
 
 //**********************************************************//
 //********************S3 Related Helpers********************//
@@ -255,14 +396,11 @@ async function parse(keyName, phrase)
             arrayMatches.push([lineNum,line]);
         }
         return arrayMatches;
-        console.log(arrayMatches);
-        console.log(arrayMatches.length);
     }
     catch(err){
         console.log(err);
     }
 }
-console.log("attempt");
 
  
 async function generateReport(keyNames, phrases) {
@@ -338,122 +476,3 @@ function generateKeyName(fileName, userName)
 {
     return userName + "_" + fileName;
 }
-
-app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
-    next();
-});
-
-
-app.post('/upload', async (req, res)=>{
-    try{
-        const user = db.fetchUserByUsername(req.session.user);
-        const {file} = req.body;
-        keyName = generateKeyName(user, file);
-        //let file = readInFile(filePath);
-        let keyName = "test.txt" 
-        await uploadToS3(file,process.env.BUCKET_NAME,keyName);
-        res.status(200).send("Upload Complete")
-    } catch (err){
-        res.status(500).send("Upload Failed");
-        throw err;
-    }
-});
-
-app.get('/download/:keyName', async (req, res)=>{
-    try{
-        let keyName = req.params.keyName;
-        const data = await downloadFromS3(process.env.BUCKET_NAME,keyName);
-
-        console.log();
-
-        res.setHeader("Content-Disposition",'attachment: filename="${keyName}"');
-        res.setHeader("Content-Type", "application/octet-stream");
-
-        await pipe(data.Body, res);
-        res.status(200).send("Download Complete");
-
-    } catch (err){
-        res.status(500).send("Download Failed");
-        throw err;
-    }
-});
-app.post('/generateReport', async (req, res)=> {
-    let {keys, searches} = req.body;
-    try{
-        await generateReport(keys, searches);
-        res.json({success: true});
-    }catch(err){
-        res.status(500).send("Generate Failed");
-        throw err;
-    }
-});
-
-app.post('/addDoc', async (req, res) => {
-    const {key, fileName, user} = req.body;
-    try {
-        await db.insertDoc(key, fileName, user);
-        res.json({success: true});
-    } catch (err) {
-        res.status(500).send("Could not add document.");
-    }
-});
-
-app.get('/all', async (req, res) => {
-    try {
-        let rows = await db.printAllTables();
-        res.json({success: true, data: rows});
-    } catch (err) {
-        res.status(500).send("Could not add document.");
-    }
-});
-
-//**********************************************************//
-//****************** Login-Related Routes ******************//
-//**********************************************************//
-app.post('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.json({ success: true });
-    });
-});
-app.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    try {
-        await db.insertUser(username, email, hashedPassword);
-        req.session.user = username;
-        res.json({success: true});
-    } catch (err) {
-        res.status(500).send("Username might already exist.");
-    }
-});
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    const user = await db.fetchUserByUsername(username);
-    if (user && await bcrypt.compare(password, user[0].Password)) {
-        req.session.user = username;
-        return res.json({ success: true, user: username });
-    } else {
-        res.status(401).send("Invalid credentials.");
-    }
-});
-
-
-// app.get('/', async (req, res) => { 
-//     res.render('index.html', { user: req.session.user}); 
-// });
-app.listen(24086, () => console.log('The server is up and running...'));
-
-/*
-   ,     #_
-   ~\_  ####_  
-  ~~  \_#####\
-  ~~     \###|
-  ~~       \#/ ___   
-   ~~       V~' '->
-    ~~~         /
-      ~~._.   _/
-         _/ _/
-       _/m/'
-
-*/
