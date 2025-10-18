@@ -277,6 +277,7 @@ async function parse(keyName, phrase)
     try{
         let lines;
         let type = keyType(keyName);
+        console.log(type);
         const data = await downloadFromS3(process.env.BUCKET_NAME, keyName);
 
         if(type == 'pdf')
@@ -290,13 +291,13 @@ async function parse(keyName, phrase)
         else if(type == 'txt')
         {
             const rl = readline.createInterface({
-                input: data.body,
+                input: data.Body,
                 crlfDelay: Infinity
             })
             lines = [];
-            for(const line of rl)
+            for await(const line of rl)
             {
-                lines.push_back(line);
+                lines.push(line);
             }
         }
         else if(type =='office')
@@ -395,6 +396,7 @@ async function parse(keyName, phrase)
         {
             arrayMatches.push([lineNum,line]);
         }
+        console.log(arrayMatches);
         return arrayMatches;
     }
     catch(err){
