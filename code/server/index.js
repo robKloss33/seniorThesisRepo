@@ -396,7 +396,7 @@ async function parse(keyName, phrase)
         {
             arrayMatches.push([lineNum,line]);
         }
-        console.log(arrayMatches);
+        //console.log(arrayMatches);
         return arrayMatches;
     }
     catch(err){

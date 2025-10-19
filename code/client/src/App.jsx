@@ -1,6 +1,7 @@
 import { useState,useEffect } from 'react'
 import './App.css'
 import NavBar from './NavBar'
+import DocSelection from './DocSelection';
 import LoginForm from './loginForm';
 
 function App() {
@@ -11,9 +12,9 @@ function App() {
   useEffect(() => {
     const fetchUserDocs = async () => {
       if (!user){
-        console.log("Not logged in yet")
+        console.log("Not logged in yet");
+        return;
       } 
-      else{
         try {
           const res = await fetch('http://localhost:24086/userDocsQuery',{
             credentials: "include",
@@ -21,24 +22,32 @@ function App() {
           });
           if (res.ok) {
             console.log("here bro")
-            const docs = await res.json();
+            let docs = await res.json();
+            docs = docs.data;
             console.log(docs);
-            setUserDocs(docs || []);
+            console.log("^^^^^");
+            setUserDocs(docs[0] || []);
           } else {
             console.error('Error fetching Docs:', res.statusText);
           }
         } catch (error) {
           console.error('Error fetching Docs:', error);
         }
-      }
       
     };
     fetchUserDocs();
   }, [user]);
+
+
   return (
     <>
       <NavBar></NavBar>
       <LoginForm setUser={setUser}></LoginForm>
+      {user && (
+        <>
+          <DocSelection docs={userDocs} />
+        </>
+      )}
       <h1> Document Parse and Search</h1>
       
     </>
