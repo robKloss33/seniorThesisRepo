@@ -113,22 +113,22 @@ Refactoring parse
 
 ---
 
-## Week 7 Summary (MM/DD/YYYY)
+## Week 7 Summary (10/19/2025)
 ### This week I worked on:
 
-[Your answer here]
+Front end react components, mainly login button
 
 ### This week I learned:
 
-[Your answer here]
+Brushed up on react elements
 
 ### My successes this week were:
 
-[Your answer here]
+Login button works correctly and refreshes to get user courses
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Setting up cors for local development
 
 ---
 
