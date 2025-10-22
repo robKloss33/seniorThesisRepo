@@ -75,7 +75,7 @@ function LoginForm({ setUser }) {
             <div className="mb-3">
             {username !== null ? (
                 <div className="alert alert-success d-flex justify-content-between align-items-center">
-                    <span>Logged in as: <strong>{username}</strong></span>
+                    <span>Welcome <strong>{username}</strong></span>
                     <br></br>
                     <button onClick={handleLogout} className="btn btn-secondary btn-sm">Logout</button>
                 </div>

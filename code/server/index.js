@@ -10,7 +10,10 @@ const bcrypt = require('bcrypt');
 const readline = require('readline');
 const { readFile, writeFile } = require('node:fs/promises');
 const officeParser = require('officeparser');
-
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const mammoth = require('mammoth');
+const HTMLtoDOCX = require('html-to-docx');
 
 
 require('dotenv').config();
@@ -51,15 +54,17 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(bodyParser.json());
 
+
+app.use(cors(
+    {origin: 'http://localhost:5173',
+        credentials: true}
+));
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true
 }));
-app.use(cors(
-    {origin: 'http://localhost:5173',
-        credentials: true}
-));
+
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
 
@@ -69,16 +74,25 @@ app.use((req, res, next) => {
     next();
 });
 
-
-app.post('/upload', async (req, res)=>{
+app.post('/upload',upload.single("myFile"), async (req, res)=>{
     try{
-        const user = db.fetchUserByUsername(req.session.user);
-        const {file} = req.body;
-        keyName = generateKeyName(user, file);
-        //let file = readInFile(filePath);
-        let keyName = "test.txt" 
-        await uploadToS3(file,process.env.BUCKET_NAME,keyName);
-        res.status(200).send("Upload Complete")
+        const user = await db.fetchUserByUsername(req.session.user);
+        const file = req.file;
+
+        if (!file) {
+            return res.status(402).send("No file uploaded.");
+        }
+
+        let keyName = generateKeyName(user[0].Username, file.originalname);
+
+        await uploadToS3(file.buffer, process.env.BUCKET_NAME, keyName);
+        await db.insertDoc(keyName, file.originalname, user[0].UserID);
+
+
+
+
+
+        res.status(200).send(`Upload and Insertion of ${keyName} Complete`);
     } catch (err){
         res.status(500).send("Upload Failed");
         throw err;
@@ -105,9 +119,21 @@ app.get('/download/:keyName', async (req, res)=>{
 });
 app.post('/generateReport', async (req, res)=> {
     let {keys, searches} = req.body;
+    console.log(keys);
+    console.log(searches);
     try{
-        await generateReport(keys, searches);
-        res.json({success: true});
+        const html = await generateReport(keys, searches);
+        res.json({success: true, html: html});
+    }catch(err){
+        res.status(500).send("Generate Failed");
+        throw err;
+    }
+});
+app.post('/generateDoc', async (req, res)=> {
+    let {html} = req.body;
+    try{
+        const buffer = await HTMLtoDOCX(html);
+        res.send(buffer);
     }catch(err){
         res.status(500).send("Generate Failed");
         throw err;
@@ -221,6 +247,8 @@ async function uploadToS3(fileBody, bucketName, keyName) {
         throw err;
     }
 }
+
+
 async function downloadFromS3(bucketName, keyName) {
     try{
         const command = new GetObjectCommand({
@@ -394,7 +422,7 @@ async function parse(keyName, phrase)
         }
         if(nextLine.search(phrase)!=-1)
         {
-            arrayMatches.push([lineNum,line]);
+            arrayMatches.push([lineNum,nextLine]);
         }
         //console.log(arrayMatches);
         return arrayMatches;
@@ -406,56 +434,55 @@ async function parse(keyName, phrase)
 
  
 async function generateReport(keyNames, phrases) {
-    let doc = new Document({
-        sections: []
-    });
-    
     let paragraphs = [];
+    let html = "<div class='report'>";
+
     
     for(let i = 0; i < keyNames.length; i++)
     {
         let key = keyNames[i];
         let title = await db.fetchTitleByKey(key); 
-        paragraphs.push(new Paragraph({
-            text: title,
-        }));
-        
+        title = title[0][0].FileName;
+        html += `<h2>${title}</h2>`;
         for(let search of phrases)
         {
             let results = await parse(key, search); 
-            paragraphs.push(new Paragraph({ text: "" })); 
+            html += `<h3>${search}</h3><ul>`;
+
             
             for(let j = 0; j < results.length; j++) 
             {
-                paragraphs.push(new Paragraph({
-                    text: results[j][0] + ": " + results[j][1]
-                }));
+                html += `<li><strong>${results[j][0]}</strong>: ${results[j][1]}</li>`;
             }
+            html += `</ul>`;
         }
     }
-    doc = new Document({
-        sections: [{
-            properties: {},
-            children: paragraphs
-        }]
-    });
-    //Saves to file system as report for testing
-    // const buffer = await Packer.toBuffer(doc);
-    // const filePath = path.join(__dirname, "report.docx");
-    // fs.writeFileSync(filePath, buffer);
-    // console.log("Report Printed");
-
-    //Usage for website
-    saveDocumentToFile(doc, "newDoc.docx"); 
+    html += "</div>";
+    //saveDocumentToFile(doc, "newDoc.docx"); 
+    return html;
 }
 
+
+
+function generateKeyName(userName, fileName)
+{
+    const timestamp = Date.now();
+    return `${userName}_${timestamp}_${fileName}`;
+}
+
+
+
+
+
+
+
+
 async function saveDocumentToFile(doc, fileName) {
+    //used prior for server side test
     try {
         const buffer = await Packer.toBuffer(doc);
-        
         const filePath = path.join(__dirname, fileName);
         fs.writeFileSync(filePath, buffer);
-        
         console.log(`Document saved to ${filePath}`);
         return filePath;
     } catch (err) {
@@ -466,15 +493,11 @@ async function saveDocumentToFile(doc, fileName) {
 
 function readInFile(path)
 {
+    //server side tests
     try {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         return fileContent;
     } catch (err) {
         console.error('Error reading file:', err);
     }
-}
-
-function generateKeyName(fileName, userName)
-{
-    return userName + "_" + fileName;
 }

@@ -3,10 +3,11 @@ import './App.css'
 import NavBar from './NavBar'
 import DocSelection from './DocSelection';
 import LoginForm from './loginForm';
+import UploadDocs from './UploadDocs';
 
 function App() {
   const [user, setUser] = useState(null);  
-  const [userDocs, setUserDocs] = useState([]); 
+  const [userDocs, setUserDocs] = useState([]);
 
 
   useEffect(() => {
@@ -21,12 +22,10 @@ function App() {
             method: "GET"
           });
           if (res.ok) {
-            console.log("here bro")
             let docs = await res.json();
             docs = docs.data;
-            console.log(docs);
-            console.log("^^^^^");
             setUserDocs(docs[0] || []);
+
           } else {
             console.error('Error fetching Docs:', res.statusText);
           }
@@ -39,6 +38,25 @@ function App() {
   }, [user]);
 
 
+  const refreshUserDocs = async () => {
+    try {
+      const res = await fetch('http://localhost:24086/userDocsQuery', {
+        credentials: "include",
+        method: "GET"
+      });
+      if (res.ok) {
+        let docs = await res.json();
+        docs = docs.data;
+        setUserDocs(docs[0] || []);
+      } else {
+        console.error('Error fetching updated user courses:', res.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching updated user courses:', error);
+    }
+  };
+
+
   return (
     <>
       <NavBar></NavBar>
@@ -46,6 +64,9 @@ function App() {
       {user && (
         <>
           <DocSelection docs={userDocs} />
+
+          <br></br>
+          <UploadDocs refreshUserDocs={refreshUserDocs}/>
         </>
       )}
       <h1> Document Parse and Search</h1>
