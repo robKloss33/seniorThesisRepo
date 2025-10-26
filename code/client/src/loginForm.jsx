@@ -1,9 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function LoginForm({ setUser }) {
     const [formType, setFormType] = useState("login"); 
     const [error, setError] = useState("");
     const [username, setUsername] = useState(null); 
+
+    
+    useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('http://localhost:24086/userQuery', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (data.user) {
+          setUsername(data.user);
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.error("Session check failed:", err);
+      }
+    }
+    checkSession();
+  }, [setUser]);
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -94,18 +113,23 @@ function LoginForm({ setUser }) {
 
                     {error && <div className="alert alert-danger">{error}</div>}
                     <br></br>
-
-                    <button type="submit" className="btn btn-primary btn-block">
-                        {formType === "login" ? "Login" : "Register"}
-                    </button>
-
-                    <button
+                    <p>
+                        <button type="submit" className="btn btn-primary btn-block">
+                            {formType === "login" ? "Login" : "Register"}
+                        </button>
+                    </p>
+                    
+                    <p>
+                        <button
                         type="button"
                         className="btn btn-link"
                         onClick={() => setFormType(formType === "login" ? "register" : "login")}
                     >
                         {formType === "login" ? "Don't have an account? Register" : "Already have an account? Login"}
                     </button>
+
+                    </p>
+                
                     
                 </form>
             )}

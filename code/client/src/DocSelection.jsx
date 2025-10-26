@@ -1,9 +1,10 @@
 import { useState,useEffect } from 'react'
-import './DocSelection.css'
-function DocSelection({docs}) {
+import classes from './DocSelection.module.css'
+function DocSelection({docs, refreshUserDocs}) {
   const [error, setError] = useState("");
   const [phrases, setPhrases] = useState([]);
   const [report, setReport] = useState(null);
+  const [formType, setFormType] = useState("search"); 
 
 
   async function addTerm(event) {
@@ -14,6 +15,7 @@ function DocSelection({docs}) {
     setPhrases(prev => [...prev, formPhrase]);
     form.reset();
   }
+
   async function clearTerms(event) {
     event.preventDefault();;
     setPhrases([]);
@@ -30,23 +32,37 @@ function DocSelection({docs}) {
     const form = event.target;
     const formData = new FormData(form);
     const data = form.entries;
-    console.log(data);
+
     let selectedDocs = [];
     formData.forEach((value, key) => {
       selectedDocs.push(key);
     });
-    console.log(selectedDocs);
     selectedDocs = selectedDocs;
 
     console.log(selectedDocs);
-    try {
+    if(formType === 'search')
+    {
+      await handleSearch(selectedDocs, phrases);
+    }
+    else{
+      await handleDelete(selectedDocs);
+    }
+    setPhrases([]);
+
+
+    form.reset();
+    }
+
+
+    async function handleSearch(keys, phrases) {
+      try {
         const response = await fetch(`http://localhost:24086/generateReport`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             credentials: "include", 
-            body: JSON.stringify({ keys: selectedDocs, searches: phrases}),
+            body: JSON.stringify({ keys: keys, searches: phrases}),
         });
         if (response.ok) {
             let res = await response.json();
@@ -55,12 +71,34 @@ function DocSelection({docs}) {
             const errorText = await response.text();
             setError(errorText);
         }
-    } catch (err) {
-        console.error("Network error:", err);
-        setError("Server error, please try again.");
+      } catch (err) {
+          console.error("Network error:", err);
+          setError("Server error, please try again.");
+      }
+      
     }
 
-    form.reset();
+    async function handleDelete(keys) {
+      console.log(keys);
+      try {
+          const response = await fetch(`http://localhost:24086/removeDoc`, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              credentials: "include", 
+              body: JSON.stringify({ keys: keys}),
+          });
+          if (response.ok) {
+              await refreshUserDocs();
+          } else {
+              const errorText = await response.text();
+              setError(errorText);
+          }
+      } catch (err) {
+          console.error("Network error:", err);
+          setError("Server error, please try again.");
+      }
     }
 
 
@@ -101,33 +139,71 @@ function DocSelection({docs}) {
 
     return (
       <>
-        <div class="container">
+        <div className={classes.container}>
           <div>
-              <form onSubmit={addTerm}>
-              <input type="text" placeholder="Search Phrase..." name="Phrase"/> 
-              </form>
+              
+              <div className={classes.box}>
+                <div className={classes.halfcontainer}>
+                  <p>
+                    <form onSubmit={addTerm}>
+                      <input type="text" placeholder="Search Phrase..." name="Phrase"/> 
+                    </form>
+                  </p>
+                  <p>
+                    <form onSubmit={clearTerms}>
+                      <button className={classes.clearButton}type="submit">
+                          Clear Terms
+                      </button>
+                    </form>
+                  </p> 
+                </div>
 
-              <form onSubmit={clearTerms}>
-              <input type="submit" value="Clear Terms"></input>
-              </form>
-          
+                <h2>Search Terms</h2>
+                <p>{phrases.length === 0 ? "No terms yet"  : phrases.join(", ")} </p>
+
+
+              </div>
+              
+
+
+
+              
               <form onSubmit={handleSubmit}>
+               <div className={classes.box}>
+              <div className={classes.halfcontainer}>
+                  <p>
+                    <button type="submit" className="btn btn-primary btn-block">
+                          {formType === "search" ? "Search" : "Delete"}
+                    </button>
+                  </p>
+                  <p>
+                    <button
+                          type="button"
+                          className="btn btn-link"
+                          onClick={() => setFormType(formType === "search" ? "delete" : "search")}>
+
+                          {formType === "search" ? "Switch to document removal" : "Switch to document search"}
+                    </button>
+                  </p>
+              </div>
+              </div>
+              
               <br/>
               {docs.map(doc=> (
                 <div key={doc.DocID}>
-                  <input type ='checkbox' id= {doc.DocID}  name={doc.KeyName} value={doc.FileName}/>
+                  <input type ='checkbox' id= {doc.DocID}  name={doc.KeyName} value={doc.FileName} className={classes.input}/>
                   <label htmlFor={doc.KeyName}> {doc.FileName} </label>
                   <br/>
                 </div>
+
               ))}
-              <input type="submit" value="Submit"></input>
               </form>
           </div>
           <div>
               {report && (
               <>
               <button onClick={handleDownload}> Download Report</button>
-              <div className="report-container" dangerouslySetInnerHTML={{ __html: report }}/>
+              <div dangerouslySetInnerHTML={{ __html: report }}/>
               </>
               )}
           </div>
@@ -157,4 +233,7 @@ function DocSelection({docs}) {
             ))}
           </tbody>
         </table>
+
+
+    <input type="submit" value="Submit"></input>
 */

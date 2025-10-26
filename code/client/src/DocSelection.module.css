@@ -1,0 +1,148 @@
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f7f9f8;
+  color: #082D0F;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #107F63;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.halfcontainer {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #deefe7;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 1rem;
+  justify-content: space-between;
+}
+
+.container .box {
+  background-color: #deefe7;
+  margin: 0;
+  padding: 1.25rem;
+  font-size: 16px;
+  flex: 1 1 48%;
+  min-width: 300px;
+  box-sizing: border-box;
+  overflow: visible;
+  border: 3px solid #0d5b49;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.container .box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+}
+
+.container p {
+  background-color: #deefe7;
+  margin: 0.25rem 0;
+  padding: 6px 10px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.container p + p {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.report-container {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+br {
+  display: block;
+  margin: 5px 0;
+}
+
+
+input[type=text], input[type=email], input[type=password], input[type=file]{
+  border: 2px solid #107F63;
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 8px 10px;
+  width: 80%;
+  font-family: 'Open Sans', sans-serif;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, input[type=file]:focus{
+  outline: none;
+  border-color: #0d5b49;
+  box-shadow: 0 0 5px rgba(16,127,99,0.5);
+}
+
+input[type=checkbox] {
+  accent-color: #107F63;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+button, input[type=submit], .clearButton {
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.25rem;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-weight: 600;
+}
+
+button:hover, input[type=submit]:hover, .clearButton:hover {
+  transform: translateY(-2px);
+}
+
+
+.btn-primary {
+  background-color: #0d5b49;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #0b4e3f;
+}
+
+
+.btn-link {
+  background: none;
+  color: #043d2c;
+  text-decoration: underline;
+}
+
+.btn-link:hover {
+  color: #001e15;
+}
+
+
+.clearButton {
+  background-color: #5E807F;
+  color: #043d2c;
+  border: 1.5px solid #107F63;
+}
+
+
+h2, h5 {
+  color: #082D0F;
+  margin-bottom: 0.5rem;
+}

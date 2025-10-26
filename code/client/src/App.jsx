@@ -1,6 +1,5 @@
 import { useState,useEffect } from 'react'
-import './App.css'
-import NavBar from './NavBar'
+import classes from './App.module.css'
 import DocSelection from './DocSelection';
 import LoginForm from './loginForm';
 import UploadDocs from './UploadDocs';
@@ -9,6 +8,17 @@ function App() {
   const [user, setUser] = useState(null);  
   const [userDocs, setUserDocs] = useState([]);
 
+  useEffect(() => {
+  fetch("http://localhost:24086/userQuery", {
+    credentials: "include"
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.user) {
+      setUser(data.user);
+    }
+  });
+}, []);
 
   useEffect(() => {
     const fetchUserDocs = async () => {
@@ -59,17 +69,23 @@ function App() {
 
   return (
     <>
-      <NavBar></NavBar>
-      <LoginForm setUser={setUser}></LoginForm>
+      <h1> Document Parse and Search</h1>
+      <div class= {classes.container}>
+        <div><LoginForm setUser={setUser}></LoginForm></div>
+        {user && (
+        <>
+          <div><UploadDocs refreshUserDocs={refreshUserDocs}/></div>
+        </>)}
+      </div>
       {user && (
         <>
-          <DocSelection docs={userDocs} />
+          <DocSelection docs={userDocs} refreshUserDocs={refreshUserDocs} />
 
           <br></br>
-          <UploadDocs refreshUserDocs={refreshUserDocs}/>
+          
         </>
       )}
-      <h1> Document Parse and Search</h1>
+      
       
     </>
   )

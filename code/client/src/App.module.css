@@ -1,0 +1,64 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #107F63;
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.halfcontainer {
+display: flex;
+flex-wrap: wrap;
+background-color: #107F63;
+box-sizing: border-box;
+overflow-x: hidden;
+}
+
+
+
+.container div {
+  background-color: #deefe7;
+  margin: 0.25vw;
+  padding: 0.5rem;
+  font-size: 16px;
+  flex: 1 1 48%;
+  min-width: 300px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+button{
+  color: #082D0F;
+  background-color: #5E807F;
+  border: solid #107F63;
+  border-width: 3px;
+}
+input:focus {
+  border: 3px solid #082D0F;
+}
+
+h1{
+  display: flex;
+  border: 5px solid #107F63;
+  background-image: linear-gradient(to top, #107F63, #deefe7);;
+  text-align: center;
+  color: #082D0F;
+  padding: 20px;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+
+button, input[type=FileUpload]{
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.25rem;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-weight: 600;
+}
+
+button:hover, input[type=FileUpload]:hover{
+  transform: translateY(-2px);
+}
+

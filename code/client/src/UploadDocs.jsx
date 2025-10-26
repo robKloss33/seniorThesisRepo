@@ -1,27 +1,49 @@
 
-import { useState } from "react";
+import { useState, useRef} from "react";
 
 
 function UploadDocs({refreshUserDocs}) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const fileInputRef = useRef(null);
 
 	const onFileChange = (event) => {
 		setSelectedFile(event.target.files[0]);
 	};
+
+  function checkValid(keyName, size){
+    if(keyName.endsWith('.pdf') || keyName.endsWith('.docx') || keyName.endsWith('.xlsx') || keyName.endsWith('.pptx') || keyName.endsWith('.txt'))
+    {
+        if(size <= 5)
+        {
+          return true;
+        }
+    }
+    return false;
+  } 
+
 
 
   async function FileUpload(event) {
     event.preventDefault();
 
     const form = event.target;
-    const formData = new FormData();
+    let formData = new FormData();
 
 		formData.append(
 			"myFile",
 			selectedFile,
 			selectedFile.name
 		);
+    const fileSize = selectedFile.size;
+    const fileSizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+    if(!checkValid(selectedFile.name, fileSizeMB))
+    {
+      console.error("Network error: Invalid File");
+      setError("File must be pdf, docx, xlsx, pptx, txt and <= 5mb");
+      return;
+    }
 
     console.log(selectedFile);
     try {
@@ -34,10 +56,12 @@ function UploadDocs({refreshUserDocs}) {
         if (response.ok) {
             await refreshUserDocs();
             setSelectedFile(null);
+            setMessage("Uploaded Doc");
 
         } else {
             const errorText = await response.text();
             setError(errorText);
+            setMessage(errorText);
         }
     } catch (err) {
         console.error("Network error:", err);
@@ -51,6 +75,8 @@ function UploadDocs({refreshUserDocs}) {
 			<div>
 				<input type="file" onChange={onFileChange} />
 				<button onClick={FileUpload}>Upload!</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {message && <p style={{ color: "green" }}>{message}</p>}
 			</div>
 			
 		</div>

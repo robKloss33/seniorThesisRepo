@@ -131,7 +131,7 @@ async insertDoc(key, fileName, user){
         const params = [key, fileName, user];
         const sql = `INSERT INTO Docs (KeyName, FileName, UserID) VALUES (?,?,?);`;
         await this.query(sql, params);
-        console.log("Successfully inserted document");
+        console.log(`Successfully inserted ${fileName}`);
     }catch(err){
         console.error(err);
         throw err;
@@ -153,7 +153,7 @@ async fetchUserID(username){
             throw new Error("No such user exists");
         }
         else{
-            console.log("Successfully fetched UserID");
+            console.log(`Successfully fetched ${username}'s UserID`);
             return rows[0][0].UserID; 
         }
     }catch(err){
@@ -166,9 +166,9 @@ async fetchDocsByUser(username){
     try{
         const userID = await this.fetchUserID(username);
         const params = [userID];
-        const sql = `SELECT * FROM Docs WHERE UserID = ?`;
+        const sql = `SELECT * FROM Docs WHERE UserID = ? ORDER BY Docs.FileName ASC`;
         const rows = await this.query(sql, params);
-        console.log("Successfully fetched ${username}'s Docs");
+        console.log(`Successfully fetched ${username}'s Docs`);
         return rows;
     }catch(err){
         console.error(err);
@@ -185,7 +185,7 @@ async fetchUserByUsername(username){
             throw new Error("No such user exists");
         }
         else{
-            console.log("Successfully fetched UserID");
+            console.log(`Successfully fetched ${username}`);
             return rows[0]; 
         }
     }catch(err){
@@ -197,7 +197,7 @@ async fetchTitleByKey(keyName){
     try{
         const sql = `SELECT FileName FROM Docs WHERE KeyName = ?`;
         const rows = await this.query(sql, [keyName]);
-        console.log("Successfully fetched Doc Name");
+        console.log(`Successfully fetched ${keyName}`);
         return rows;
     }catch(err){
         console.error(err);
@@ -218,19 +218,18 @@ async printAllTables(){
 }
 
 
-
-
-
-
-// async example(){
-//     try{
-
-//     }catch(err){
-//         console.error(err);
-//         throw err;
-//     }
-// }
-
+async deleteDocs(keys){
+    try{
+        const placeholders = keys.map(() => '?').join(',');
+        const sql = `DELETE FROM Docs WHERE KeyName IN (${placeholders})`;
+        const rows = await this.query(sql, keys);
+        console.log(`Successfully deleted ${keys}`);
+        return rows;
+    }catch(err){
+        console.error(err);
+        throw err;
+    }
+}
 
 }
 

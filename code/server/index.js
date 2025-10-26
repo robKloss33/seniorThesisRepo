@@ -8,7 +8,6 @@ const DBAbstraction = require('./DBAbstraction');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const readline = require('readline');
-const { readFile, writeFile } = require('node:fs/promises');
 const officeParser = require('officeparser');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
@@ -20,18 +19,17 @@ require('dotenv').config();
 
 
 const { PDFParse } = require('pdf-parse');
-//look into pdf-parse
-//mammoth for docs display
+
 
 const {pipeline} = require("stream");
 const {promisify} = require("util");
 
 const { Document, Packer, Paragraph, HeadingLevel } = require("docx"); 
-const { saveAs } =  require("file-saver");
 
 
-const {S3Client, PutObjectCommand, GetObjectCommand, RestoreRequestFilterSensitiveLog} = require("@aws-sdk/client-s3");
-const e = require('express');
+
+const {S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand} = require("@aws-sdk/client-s3");
+
 
 const app = express();
 const pipe = promisify(pipeline);
@@ -50,9 +48,8 @@ db.init();
 
 
 app.use(morgan('dev'));
-
-app.use(bodyParser.urlencoded({ extended: true })); 
-app.use(bodyParser.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 
 app.use(cors(
@@ -60,13 +57,19 @@ app.use(cors(
         credentials: true}
 ));
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax', 
+    maxAge: 1000 * 60 * 60 * 24, 
+  }
 }));
 
-app.use(express.static(path.join(__dirname, '../client/dist')));
 
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 
 app.use((req, res, next) => {
@@ -150,6 +153,18 @@ app.post('/addDoc', async (req, res) => {
     }
 });
 
+app.post('/removeDoc', async (req, res) => {
+    const {keys} = req.body;
+
+    console.log(keys);
+    try {
+        await deleteAndRemoveKeys(keys);
+        res.json({success: true});
+    } catch (err) {
+        res.status(500).send("Could not delete document");
+    }
+});
+
 app.get('/all', async (req, res) => {
     try {
         let rows = await db.printAllTables();
@@ -162,10 +177,6 @@ app.get('/all', async (req, res) => {
 
 app.get('/userDocsQuery', async (req, res) => {
     try {
-        // let userQuery = await db.fetchUserByUsername(req.session.user);
-        // let userID = userQuery[0].UserID;
-        // console.log(userID);
-        console.log("^^^^^^^");
         let docs = await db.fetchDocsByUser(req.session.user);
         res.json({success: true, data: docs});
     } catch (err) {
@@ -258,6 +269,52 @@ async function downloadFromS3(bucketName, keyName) {
           const data = await s3.send(command);
           console.log("Downloaded file successfully");
           return data;
+    }
+    catch(err){
+        throw err;
+    }
+}
+
+async function deleteFromS3(bucketName, keys) {
+    try {
+        const { Deleted } = await s3.send(
+          new DeleteObjectsCommand({
+            Bucket: bucketName,
+            Delete: {
+              Objects: keys.map((k) => ({ Key: k })),
+            },
+          }),
+        );
+        console.log(
+          `Successfully deleted ${Deleted.length} objects from S3 bucket. Deleted objects:`,
+        );
+        console.log(Deleted.map((d) => ` • ${d.Key}`).join("\n"));
+      } catch (caught) {
+        if (
+          caught instanceof S3ServiceException &&
+          caught.name === "NoSuchBucket"
+        ) {
+          console.error(
+            `Error from S3 while deleting objects from ${bucketName}. The bucket doesn't exist.`,
+          );
+        } else if (caught instanceof S3ServiceException) {
+          console.error(
+            `Error from S3 while deleting objects from ${bucketName}.  ${caught.name}: ${caught.message}`,
+          );
+        } else {
+          throw caught;
+        }
+      }
+  }
+
+async function deleteAndRemoveKeys(keys)
+{
+    try{
+        if(keys != [])
+        {
+            await deleteFromS3(process.env.BUCKET_NAME,keys);
+            await db.deleteDocs(keys);
+        }
     }
     catch(err){
         throw err;
@@ -501,3 +558,4 @@ function readInFile(path)
         console.error('Error reading file:', err);
     }
 }
+
