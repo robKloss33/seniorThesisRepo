@@ -135,19 +135,19 @@ Setting up cors for local development
 ## Week 8 Summary (MM/DD/YYYY)
 ### This week I worked on:
 
-[Your answer here]
+Deletion routes and styling
 
 ### This week I learned:
 
-[Your answer here]
+CSS focus and S3 deletion
 
 ### My successes this week were:
 
-[Your answer here]
+Wrapping up most of my styling
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Managing large requests
 
 ---
 
