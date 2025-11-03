@@ -154,19 +154,19 @@ Managing large requests
 ## Week 9 Summary (MM/DD/YYYY)
 ### This week I worked on:
 
-[Your answer here]
+Styling exclusively
 
 ### This week I learned:
 
-[Your answer here]
+CSS hover tricks 
 
 ### My successes this week were:
 
-[Your answer here]
+Divided up my page properly
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Readability
 
 ---
 
