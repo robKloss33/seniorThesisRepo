@@ -4,3 +4,4 @@ node_modules/
 ReportAbstraction.js
 S3Abstraction.js
 ParseAbstraction.js
+s3-test.js

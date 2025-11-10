@@ -69,8 +69,9 @@ function App() {
 
   return (
     <>
-      <h1> Document Parse and Search</h1>
       <div class= {classes.container}>
+        <h1> Document Parse and Search</h1>
+        
         <div><LoginForm setUser={setUser}></LoginForm></div>
         {user && (
         <>

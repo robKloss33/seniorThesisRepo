@@ -64,9 +64,11 @@ app.use(session({
     httpOnly: true,
     secure: false,
     sameSite: 'lax', 
-    maxAge: 1000 * 60 * 60 * 24, 
+    maxAge: 1000 * 60 * 60 * 2, 
   }
 }));
+
+
 
 
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -77,10 +79,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/upload',upload.single("myFile"), async (req, res)=>{
+app.post('/upload', upload.single("myFile"), async (req, res)=>{
     try{
         const user = await db.fetchUserByUsername(req.session.user);
         const file = req.file;
+        console.log(file);
 
         if (!file) {
             return res.status(402).send("No file uploaded.");
@@ -90,10 +93,6 @@ app.post('/upload',upload.single("myFile"), async (req, res)=>{
 
         await uploadToS3(file.buffer, process.env.BUCKET_NAME, keyName);
         await db.insertDoc(keyName, file.originalname, user[0].UserID);
-
-
-
-
 
         res.status(200).send(`Upload and Insertion of ${keyName} Complete`);
     } catch (err){
@@ -132,6 +131,7 @@ app.post('/generateReport', async (req, res)=> {
         throw err;
     }
 });
+
 app.post('/generateDoc', async (req, res)=> {
     let {html} = req.body;
     try{
@@ -194,6 +194,7 @@ app.post('/logout', (req, res) => {
 });
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
+    console.log(username, email, password);
 
     const hashedPassword = await bcrypt.hash(password, 10);
     try {

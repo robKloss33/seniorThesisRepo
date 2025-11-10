@@ -7,17 +7,36 @@ body {
   color: #082D0F;
 }
 
+.mainContent {
+  flex: 1 1 55%;
+  min-width: 400px;
+}
+
+.reportContainer {
+  flex: 1 1 40%;
+  background-color: #deefe7;
+  color: #082D0F;
+  border: 3px solid #0d5b49;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+/* Make them side by side */
 .container {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;     /* prevents report from wrapping below */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
   background-color: #107F63;
+  padding: 1.5rem;
   width: 100vw;
   box-sizing: border-box;
-  overflow-x: hidden;
-  padding: 1.5rem;
-  justify-content: center;
-  gap: 1.5rem;
 }
+
 
 .halfcontainer {
   display: flex;
@@ -94,7 +113,7 @@ input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, inp
 }
 
 input[type=checkbox] {
-  accent-color: #107F63;
+  accent-color: #68b8d3;
   transform: scale(1.2);
   cursor: pointer;
 }

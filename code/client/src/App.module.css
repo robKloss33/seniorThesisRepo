@@ -38,14 +38,27 @@ input:focus {
 
 h1{
   display: flex;
-  border: 5px solid #107F63;
-  background-image: linear-gradient(to top, #107F63, #deefe7);;
+  border: none;
+  background-image: linear-gradient(to top, #107F63, #deefe7, #107F63);;
   text-align: center;
   color: #082D0F;
   padding: 20px;
   width: 100vw;
   box-sizing: border-box;
 }
+
+a{
+  display: flex;
+  border-bottom: 5px solid #3c107f;
+  border-top: 5px solid #3c107f;
+  background-image: #deefe7;
+  text-align: center;
+  color: #082D0F;
+  padding: 20px;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
 
 
 button, input[type=FileUpload]{

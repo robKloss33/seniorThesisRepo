@@ -29,7 +29,8 @@ function LoginForm({ setUser }) {
         const form = event.target;
         const formUsername = form.username.value;
         const password = form.password.value;
-        console.log(formUsername, password);
+        const email = form.email.value;
+        console.log(formUsername,  password);
 
         const route = formType === "login" ? "/login" : "/register";
         console.log(route);
@@ -40,7 +41,7 @@ function LoginForm({ setUser }) {
                     "Content-Type": "application/json",
                 },
                 credentials: "include", 
-                body: JSON.stringify({ username: formUsername, password }),
+                body: JSON.stringify({ username: formUsername, email, password }),
             });
 
             if (response.ok) {

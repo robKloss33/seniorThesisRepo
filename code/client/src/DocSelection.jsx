@@ -199,7 +199,7 @@ function DocSelection({docs, refreshUserDocs}) {
               ))}
               </form>
           </div>
-          <div>
+          <div style={{color: "#deefe7"}}>
               {report && (
               <>
               <button onClick={handleDownload}> Download Report</button>
