@@ -189,22 +189,21 @@ Readability
 
 ---
 
-## Week 11 Summary (MM/DD/YYYY)
+## Week 11 Summary (11/17/2025)
 ### This week I worked on:
 
-[Your answer here]
+Cleaing up lose AWS assets
 
 ### This week I learned:
-
-[Your answer here]
+Budget management
 
 ### My successes this week were:
 
-[Your answer here]
+Removing testing components
 
 ### The challenges I faced this week were:
 
-[Your answer here]
+Tracking down everything I created
 
 ---
 
