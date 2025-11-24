@@ -47,7 +47,7 @@ function UploadDocs({refreshUserDocs}) {
 
     console.log(selectedFile);
     try {
-        const response = await fetch(`http://localhost:24086/upload`, {
+        const response = await fetch(`/upload`, {
             method: "POST",
             credentials: "include", 
             body: formData,

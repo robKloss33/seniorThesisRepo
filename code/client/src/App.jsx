@@ -9,7 +9,7 @@ function App() {
   const [userDocs, setUserDocs] = useState([]);
 
   useEffect(() => {
-  fetch("http://localhost:24086/userQuery", {
+  fetch("/userQuery", {
     credentials: "include"
   })
   .then(res => res.json())
@@ -27,7 +27,7 @@ function App() {
         return;
       } 
         try {
-          const res = await fetch('http://localhost:24086/userDocsQuery',{
+          const res = await fetch('/userDocsQuery',{
             credentials: "include",
             method: "GET"
           });
@@ -50,7 +50,7 @@ function App() {
 
   const refreshUserDocs = async () => {
     try {
-      const res = await fetch('http://localhost:24086/userDocsQuery', {
+      const res = await fetch('/userDocsQuery', {
         credentials: "include",
         method: "GET"
       });

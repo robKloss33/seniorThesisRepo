@@ -56,7 +56,7 @@ function DocSelection({docs, refreshUserDocs}) {
 
     async function handleSearch(keys, phrases) {
       try {
-        const response = await fetch(`http://localhost:24086/generateReport`, {
+        const response = await fetch(`/generateReport`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -81,7 +81,7 @@ function DocSelection({docs, refreshUserDocs}) {
     async function handleDelete(keys) {
       console.log(keys);
       try {
-          const response = await fetch(`http://localhost:24086/removeDoc`, {
+          const response = await fetch(`/removeDoc`, {
               method: "POST",
               headers: {
                   "Content-Type": "application/json",
@@ -108,7 +108,7 @@ function DocSelection({docs, refreshUserDocs}) {
       console.log(report);
 
       try {
-          const response = await fetch(`http://localhost:24086/generateDoc`, {
+          const response = await fetch(`/generateDoc`, {
               method: "POST",
               headers: {
                   "Content-Type": "application/json",
@@ -208,7 +208,7 @@ function DocSelection({docs, refreshUserDocs}) {
               )}
           </div>
         </div>
-
+ 
       </>
       
       );

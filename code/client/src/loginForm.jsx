@@ -9,7 +9,7 @@ function LoginForm({ setUser }) {
     useEffect(() => {
     async function checkSession() {
       try {
-        const res = await fetch('http://localhost:24086/userQuery', {
+        const res = await fetch('/userQuery', {
           credentials: 'include',
         });
         const data = await res.json();
@@ -35,7 +35,7 @@ function LoginForm({ setUser }) {
         const route = formType === "login" ? "/login" : "/register";
         console.log(route);
         try {
-            const response = await fetch(`http://localhost:24086${route}`, {
+            const response = await fetch(`${route}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -45,7 +45,7 @@ function LoginForm({ setUser }) {
             });
 
             if (response.ok) {
-                const userRes = await fetch('http://localhost:24086/userQuery', {
+                const userRes = await fetch('/userQuery', {
                     credentials: "include",
                 });
                 const userData = await userRes.json();
@@ -70,7 +70,7 @@ function LoginForm({ setUser }) {
     }
     async function handleLogout() {
         try {
-            const response = await fetch('http://localhost:24086/logout', {
+            const response = await fetch('/logout', {
                 method: "POST",
                 credentials: "include",
             });
