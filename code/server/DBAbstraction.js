@@ -12,7 +12,7 @@ class DBAbstraction{
 constructor(){
     this.pool = null;
     this.ssh = null;
-    this.forwardedStream = null;
+    //this.forwardedStream = null;
 }
 
 async init(){
@@ -60,7 +60,7 @@ async createSSHTunnel() {
 
 async createPool(){
     this.pool = mysql.createPool({
-        host: 'localhost',   
+        host: process.env.DB_HOST,   
         port: 3306,
         user: process.env.DB_USER,   
         password: process.env.DB_PASS, 
