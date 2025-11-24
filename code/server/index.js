@@ -19,8 +19,9 @@ require('dotenv').config();
 
 
 //const { PDFParse } = require('pdf-parse');
+(async () => {
 const PDFParse = (await import("pdf-parse")).default;
-
+});
 
 const {pipeline} = require("stream");
 const {promisify} = require("util");
