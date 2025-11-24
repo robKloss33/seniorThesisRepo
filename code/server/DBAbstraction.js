@@ -2,16 +2,16 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
-const { Client } = require('ssh2');
+//const { Client } = require('ssh2');
 const net = require('net');  
 require('dotenv').config();
-const tunnel = require('tunnel-ssh');
+//const tunnel = require('tunnel-ssh');
 
 class DBAbstraction{
 
 constructor(){
     this.pool = null;
-    this.ssh = null;
+    //this.ssh = null;
     //this.forwardedStream = null;
 }
 
@@ -30,45 +30,45 @@ async init(){
     }
 }
 
-async createSSHTunnel() {
-    return new Promise((resolve, reject) => {
-        this.ssh = new Client();
-        console.log("client");
-        this.ssh.on('ready', () => {
-            console.log("in SHH tunnel create");
-            this.ssh.forwardOut(
-                '127.0.0.1',
-                12345,
-                process.env.DB_HOST,
-                parseInt(process.env.DB_PORT),
-                (err,stream) => {
-                    if(err) return reject(err);
+// async createSSHTunnel() {
+//     return new Promise((resolve, reject) => {
+//         this.ssh = new Client();
+//         console.log("client");
+//         this.ssh.on('ready', () => {
+//             console.log("in SHH tunnel create");
+//             this.ssh.forwardOut(
+//                 '127.0.0.1',
+//                 12345,
+//                 process.env.DB_HOST,
+//                 parseInt(process.env.DB_PORT),
+//                 (err,stream) => {
+//                     if(err) return reject(err);
 
-                    this.forwardedStream  = stream;
-                    resolve();
-                }
-            );
-        }).on('error', reject)
-            .connect({
-                host: process.env.SSH_HOST,
-                username: process.env.SSH_USERNAME,
-                port: 22,
-                privateKey: fs.readFileSync(process.env.SSH_KEY_PATH)
-            });
-    });
-}
+//                     this.forwardedStream  = stream;
+//                     resolve();
+//                 }
+//             );
+//         }).on('error', reject)
+//             .connect({
+//                 host: process.env.SSH_HOST,
+//                 username: process.env.SSH_USERNAME,
+//                 port: 22,
+//                 privateKey: fs.readFileSync(process.env.SSH_KEY_PATH)
+//             });
+//     });
+// }
 
 async createPool(){
     this.pool = mysql.createPool({
         host: process.env.DB_HOST,   
-        port: 3306,
+        port: parseInt(process.env.DB_PORT),
         user: process.env.DB_USER,   
         password: process.env.DB_PASS, 
         database: process.env.DB_NAME, 
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        stream: this.forwardedStream
+        //stream: this.forwardedStream
     });
 }
 
