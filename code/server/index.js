@@ -18,7 +18,8 @@ const HTMLtoDOCX = require('html-to-docx');
 require('dotenv').config();
 
 
-const { PDFParse } = require('pdf-parse');
+//const { PDFParse } = require('pdf-parse');
+const PDFParse = (await import("pdf-parse")).default;
 
 
 const {pipeline} = require("stream");
@@ -45,6 +46,8 @@ const s3 = new S3Client({
 
 const db = new DBAbstraction;
 db.init();
+
+
 
 
 app.use(morgan('dev'));
