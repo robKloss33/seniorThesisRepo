@@ -198,10 +198,8 @@ app.post('/logout', (req, res) => {
 });
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
-    console.log(username, email, password);
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    try {
+    try{
         await db.insertUser(username, email, hashedPassword);
         req.session.user = username;
         res.json({success: true});
@@ -265,7 +263,6 @@ async function uploadToS3(fileBody, bucketName, keyName) {
         throw err;
     }
 }
-
 
 async function downloadFromS3(bucketName, keyName) {
     try{

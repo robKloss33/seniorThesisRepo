@@ -160,14 +160,7 @@ function DocSelection({docs, refreshUserDocs}) {
 
                 <h2>Search Terms</h2>
                 <p>{phrases.length === 0 ? "No terms yet"  : phrases.join(", ")} </p>
-
-
               </div>
-              
-
-
-
-              
               <form onSubmit={handleSubmit}>
                <div className={classes.box}>
               <div className={classes.halfcontainer}>

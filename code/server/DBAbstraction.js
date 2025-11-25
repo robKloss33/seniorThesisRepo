@@ -89,7 +89,7 @@ async createAllTables(){
     try{
         let userSQL = `CREATE TABLE IF NOT EXISTS Users (
             UserID INT AUTO_INCREMENT,
-            Username	VARCHAR(255) NOT NULL,
+            Username	VARCHAR(255) NOT NULL UNIQUE,
             Email	VARCHAR(255) NOT NULL,
             Password	VARCHAR(255) NOT NULL,
             PRIMARY KEY(UserID)
